@@ -23,13 +23,13 @@ $pageTitle='Events'; include '_head.php';
 ?>
 <div class="page-hero">
   <div class="wrap page-hero-inner">
-    <nav class="breadcrumb"><a href="index.php">Home</a> <i class="bi bi-chevron-right" style="font-size:.55rem"></i> Events</nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="index.php"><i class="bi bi-house-door-fill" aria-hidden="true"></i>Home</a></li><li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li><li aria-current="page">Events</li></ol></nav>
     <div class="pg-label"><i class="bi bi-calendar3"></i> Programme</div>
     <h1>Club <em>Events</em></h1>
     <p>Workshops, bootcamps and masterclasses to fast-track your digital career. Free for all members.</p>
   </div>
 </div>
-<section>
+<section class="events-page">
   <div class="wrap">
     <div class="tab-group">
       <div class="tab-nav reveal">
@@ -41,7 +41,7 @@ $pageTitle='Events'; include '_head.php';
       <div id="t-up" class="tab-pane" data-d="block" style="display:block">
         <div style="border-top:1px solid var(--border)">
           <?php foreach($upcoming as $i=>$ev): ?>
-          <div class="reveal" style="transition-delay:<?=$i*.07?>s;padding:1.5rem 0;border-bottom:1px solid var(--border)">
+          <article class="event-feature-card reveal" style="transition-delay:<?=$i*.07?>s">
             <div style="display:grid;grid-template-columns:64px 1fr;gap:1.25rem;align-items:start">
               <!-- Date -->
               <div style="background:var(--warm-grey);border:1px solid var(--border);border-radius:var(--r);padding:.65rem .5rem;text-align:center">
@@ -50,6 +50,8 @@ $pageTitle='Events'; include '_head.php';
               </div>
               <!-- Info -->
               <div>
+                <?php $thumb=$thumbs[$i%count($thumbs)]; ?>
+                <img src="https://images.unsplash.com/<?=$thumb?>?auto=format&amp;fit=crop&amp;w=1000&amp;q=85" alt="" loading="lazy" style="width:100%;height:150px;object-fit:cover;border-radius:var(--r);margin-bottom:1rem">
                 <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.5rem">
                   <span class="badge b-green">Free</span>
                   <?php if(!empty($ev['is_online'])): ?><span class="badge b-stone">Online</span><?php endif; ?>
@@ -65,7 +67,7 @@ $pageTitle='Events'; include '_head.php';
                 </div>
               </div>
             </div>
-          </div>
+          </article>
           <?php endforeach; ?>
         </div>
       </div>
@@ -74,25 +76,27 @@ $pageTitle='Events'; include '_head.php';
       <div id="t-past" class="tab-pane" data-d="block" style="display:none">
         <div style="border-top:1px solid var(--border)">
           <?php foreach($past as $i=>$ev): ?>
-          <div class="reveal" style="transition-delay:<?=$i*.06?>s;display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)">
+          <article class="event-past-card reveal" style="transition-delay:<?=$i*.06?>s">
+            <?php $thumb=$thumbs[$i%count($thumbs)]; ?>
+            <img src="https://images.unsplash.com/<?=$thumb?>?auto=format&amp;fit=crop&amp;w=240&amp;q=80" alt="" loading="lazy" style="width:58px;height:58px;object-fit:cover;border-radius:var(--r);flex-shrink:0">
             <div style="flex:1;min-width:0">
               <div style="font-weight:600;font-size:.9rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><?=e($ev['title'])?></div>
               <div style="font-size:.74rem;color:var(--dim);margin-top:.18rem"><?=date('M j, Y',strtotime($ev['event_date']))?><?php if(!empty($ev['attendees'])): ?> · <span style="color:var(--sage);font-weight:600"><?=$ev['attendees']?> attended</span><?php endif; ?></div>
             </div>
             <span class="badge b-stone">Done</span>
-          </div>
+          </article>
           <?php endforeach; ?>
         </div>
       </div>
     </div>
 
     <!-- WhatsApp nudge -->
-    <div class="reveal" style="margin-top:2rem;background:var(--warm-grey);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div class="events-whatsapp reveal">
       <div>
         <div style="font-weight:600;font-size:.9rem;color:var(--ink)">Never miss an event</div>
         <div style="font-size:.8rem;color:var(--muted)">Join the WhatsApp group — event notices go there first.</div>
       </div>
-      <a href="https://chat.whatsapp.com/YOUR-LINK-HERE" target="_blank" class="btn btn-forest btn-sm"><i class="bi bi-whatsapp"></i> Join Group</a>
+      <a href="https://chat.whatsapp.com/Lu87qER9F2FKC11jTCktrO?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4" target="_blank" rel="noopener noreferrer" class="btn btn-forest btn-sm"><i class="bi bi-whatsapp"></i> Join Group</a>
     </div>
   </div>
 </section>

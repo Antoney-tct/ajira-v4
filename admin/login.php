@@ -21,9 +21,9 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#0C1A0E">
+<meta name="theme-color" content="#073B2E">
 <title>Admin — AJira Digital Club</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
 <link rel="stylesheet" href="../assets/css/main.css">
@@ -35,15 +35,15 @@ body::before,body::after{display:none}
 <body>
 <div style="width:100%;max-width:380px">
   <div style="text-align:center;margin-bottom:2rem">
-    <div style="width:48px;height:48px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:1rem;color:var(--gold);margin:0 auto 1rem;position:relative;overflow:hidden">
+    <div style="width:48px;height:48px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1rem;color:var(--gold);margin:0 auto 1rem;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)"></div>AD
     </div>
-    <div style="font-family:'Fraunces',serif;font-size:1.05rem;font-weight:300;color:white">AJira Digital Club</div>
+    <div style="font-family:var(--font-display);font-size:1.05rem;font-weight:300;color:white">AJira Digital Club</div>
     <div style="font-size:.62rem;color:rgba(255,255,255,.3);font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-top:.25rem">Admin · Zetech University</div>
   </div>
 
   <div style="background:var(--cream);border-radius:var(--r-xl);padding:2rem 1.75rem;box-shadow:var(--sh-xl)">
-    <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:300;color:var(--ink);margin-bottom:1.5rem">Sign in</div>
+    <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:300;color:var(--ink);margin-bottom:1.5rem">Sign in</div>
 
     <?php if($error): ?>
     <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.15);border-radius:var(--r);padding:.75rem .95rem;color:var(--red);font-size:.84rem;font-weight:600;margin-bottom:1.1rem">

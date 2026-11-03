@@ -35,14 +35,14 @@ $pageTitle='Join the Club'; include '_head.php';
 
 <div class="page-hero">
   <div class="wrap page-hero-inner">
-    <nav class="breadcrumb"><a href="index.php">Home</a> <i class="bi bi-chevron-right" style="font-size:.55rem"></i> Join</nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="index.php"><i class="bi bi-house-door-fill" aria-hidden="true"></i>Home</a></li><li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li><li aria-current="page">Join</li></ol></nav>
     <div class="pg-label"><i class="bi bi-lightning-charge-fill"></i> Membership</div>
     <h1>Join <em>AJira Digital</em></h1>
     <p>Complete the form and submit your membership registration for admin review.</p>
   </div>
 </div>
 
-<section>
+<section class="join-page">
   <div class="wrap">
 
   <?php if($success): ?>
@@ -82,7 +82,7 @@ $pageTitle='Join the Club'; include '_head.php';
   </div>
 
   <!-- Registration form -->
-  <div class="card reveal" style="padding:1.75rem">
+  <div class="card reveal join-form-card" style="padding:1.75rem">
     <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:300;color:var(--ink);margin-bottom:1.5rem">Register now</div>
 
     <?php if(!empty($errors)): ?>

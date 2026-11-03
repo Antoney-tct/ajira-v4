@@ -5,6 +5,31 @@ requireMember();
 $id=(int)$_SESSION['member_id']; $errors=[]; $notice='';
 $s=db()->prepare('SELECT * FROM members WHERE id=? LIMIT 1'); $s->execute([$id]); $member=$s->fetch();
 if(!$member){unset($_SESSION['member_id']); redirect('member_login.php');}
+$detectMime=static function(string $path):?string{
+  if(class_exists('finfo')){
+    try{
+      $detector=new finfo(FILEINFO_MIME_TYPE);
+      $mime=$detector->file($path);
+      if(is_string($mime)&&$mime!=='application/octet-stream') return $mime;
+    }catch(Throwable $e){ }
+  }
+  if(function_exists('mime_content_type')){
+    $mime=@mime_content_type($path);
+    if(is_string($mime)&&$mime!=='application/octet-stream') return $mime;
+  }
+  $stream=fopen($path,'rb');
+  if($stream===false) return null;
+  $header=fread($stream,512);
+  fclose($stream);
+  if(!is_string($header)) return null;
+  if(str_starts_with($header,"%PDF-")) return 'application/pdf';
+  if(str_starts_with($header,"\xFF\xD8\xFF")) return 'image/jpeg';
+  if(str_starts_with($header,"\x89PNG\r\n\x1A\n")) return 'image/png';
+  if(str_starts_with($header,'GIF87a')||str_starts_with($header,'GIF89a')) return 'image/gif';
+  if(str_starts_with($header,'RIFF')&&substr($header,8,4)==='WEBP') return 'image/webp';
+  return null;
+};
+
 if($_SERVER['REQUEST_METHOD']==='POST'){
   $action=$_POST['action']??'';
   if($action==='details'){
@@ -18,7 +43,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   if($action==='photo'){
     $file=$_FILES['profile_image']??null; $allowed=['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp']; $mime='';
     if(!$file||$file['error']!==UPLOAD_ERR_OK) $errors[]='Choose a profile image to upload.';
-    if($file&&$file['error']===UPLOAD_ERR_OK){$mime=(new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);if(!isset($allowed[$mime])||$file['size']>3*1024*1024||@getimagesize($file['tmp_name'])===false)$errors[]='Use a valid JPG, PNG, or WebP image up to 3MB.';}
+    if($file&&$file['error']===UPLOAD_ERR_OK){$mime=$detectMime($file['tmp_name']);if(!isset($allowed[$mime])||$file['size']>3*1024*1024||@getimagesize($file['tmp_name'])===false)$errors[]='Use a valid JPG, PNG, or WebP image up to 3MB.';}
     if(!$errors){$dir=__DIR__.'/assets/uploads/profile-images';if(!is_dir($dir))mkdir($dir,0750,true);$name=$id.'_'.bin2hex(random_bytes(12)).'.'.$allowed[$mime];if(move_uploaded_file($file['tmp_name'],$dir.'/'.$name)){if(!empty($member['profile_image'])&&preg_match('/^[0-9a-f_]+\.(jpg|png|webp)$/i',$member['profile_image']))@unlink($dir.'/'.$member['profile_image']);db()->prepare('UPDATE members SET profile_image=? WHERE id=?')->execute([$name,$id]);$notice='Profile photo updated.';$s->execute([$id]);$member=$s->fetch();}else$errors[]='The profile image could not be saved.';}
   }
 }
@@ -26,8 +51,8 @@ $expired=$member['is_active']&&!empty($member['expires_at'])&&strtotime($member[
 $ns=db()->prepare('SELECT * FROM member_notifications WHERE member_id=? ORDER BY created_at DESC LIMIT 8'); $ns->execute([$id]); $notifications=$ns->fetchAll();
 $pageTitle='My Member Profile'; include '_head.php';
 ?>
-<section><div class="wrap" style="max-width:820px">
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap"><div><div class="pg-label"><i class="bi bi-person-circle"></i> Member portal</div><h1 style="font-family:var(--font-display);font-weight:300;font-size:2rem;margin:.35rem 0 0">Hello, <em><?=e($member['full_name'])?></em></h1></div><a class="btn btn-outline btn-sm" href="member_logout.php">Sign out</a></div>
+<section class="member-profile-page"><div class="wrap member-profile-wrap" style="max-width:820px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap"><div><div class="pg-label"><i class="bi bi-person-circle"></i> Member portal</div><h1 style="font-family:var(--font-display);font-weight:300;font-size:2rem;margin:.35rem 0 0">Hello, <em><?=e($member['full_name'])?></em></h1></div><div style="display:flex;gap:.5rem;flex-wrap:wrap"><a class="btn btn-outline btn-sm" href="member_messages.php"><i class="bi bi-chat-dots"></i> My messages</a><a class="btn btn-outline btn-sm" href="member_logout.php">Sign out</a></div></div>
   <?php if($notice): ?><div style="background:var(--warm-grey);border:1px solid var(--border);padding:.8rem 1rem;border-radius:var(--r);margin-bottom:1rem;color:var(--ink);font-size:.84rem;font-weight:600"><?=e($notice)?></div><?php endif; ?>
   <?php if($errors): ?><div style="background:rgba(192,57,43,.06);padding:.8rem 1rem;border-radius:var(--r);margin-bottom:1rem;color:var(--red);font-size:.84rem"><?php foreach($errors as $error): ?><div><?=e($error)?></div><?php endforeach; ?></div><?php endif; ?>
   <div class="card" style="padding:1.35rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">

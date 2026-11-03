@@ -5,14 +5,14 @@ include '_head.php';
 ?>
 <div class="page-hero">
   <div class="wrap page-hero-inner">
-    <nav class="breadcrumb"><a href="index.php">Home</a> <i class="bi bi-chevron-right" style="font-size:.55rem"></i> About</nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="index.php"><i class="bi bi-house-door-fill" aria-hidden="true"></i>Home</a></li><li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li><li aria-current="page">About</li></ol></nav>
     <div class="pg-label"><i class="bi bi-info-circle"></i> About the Club</div>
     <h1>Building <em>Digital Kenya</em>,<br>one student at a time.</h1>
     <p>Founded in 2021 at Zetech University, Ruiru — training, connecting, and launching Kenya's next generation of digital professionals.</p>
   </div>
 </div>
 
-<section>
+<section class="about-overview">
   <div class="wrap">
     <div class="masonry reveal" style="margin-bottom:3rem">
       <?php foreach(['photo-1522202176988-66273c2fd55f','photo-1517048676732-d65bc937f952','photo-1552664730-d307ca884978','photo-1503676260728-1c00da094a0b'] as $id): ?>
@@ -32,7 +32,7 @@ include '_head.php';
   </div>
 </section>
 
-<section class="bg-warm">
+<section class="bg-warm about-stats">
   <div class="wrap">
     <div class="stats-band reveal">
       <div class="stat-block"><div class="stat-num" data-n="120" data-s="+">0</div><div class="stat-lbl">Members</div></div>
@@ -43,7 +43,7 @@ include '_head.php';
   </div>
 </section>
 
-<section>
+<section class="about-principles">
   <div class="wrap">
     <div class="label reveal" style="margin-bottom:1.25rem">Our principles</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
@@ -57,7 +57,7 @@ include '_head.php';
   </div>
 </section>
 
-<section class="bg-warm">
+<section class="bg-warm about-history">
   <div class="wrap">
     <div class="label reveal" style="margin-bottom:1.5rem">Club history</div>
     <div style="border-top:1px solid var(--border)">
@@ -71,7 +71,7 @@ include '_head.php';
   </div>
 </section>
 
-<section style="padding:3rem 0 5rem">
+<section class="about-cta" style="padding:3rem 0 5rem">
   <div class="wrap">
     <div class="reveal" style="background:var(--forest);border-radius:var(--r-xl);padding:2.5rem 1.75rem;position:relative;overflow:hidden;box-shadow:var(--sh-xl)">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold)"></div>

@@ -13,13 +13,13 @@ foreach($all as $p) $cats[$p[1]][]=$p;
 ?>
 <div class="page-hero">
   <div class="wrap page-hero-inner">
-    <nav class="breadcrumb"><a href="index.php">Home</a> <i class="bi bi-chevron-right" style="font-size:.55rem"></i> Gallery</nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="index.php"><i class="bi bi-house-door-fill" aria-hidden="true"></i>Home</a></li><li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li><li aria-current="page">Gallery</li></ol></nav>
     <div class="pg-label"><i class="bi bi-images"></i> Club Life</div>
     <h1>Photo <em>Gallery</em></h1>
     <p>Real moments from workshops, bootcamps and community events. Tap any photo to enlarge.</p>
   </div>
 </div>
-<section>
+<section class="gallery-page">
   <div class="wrap">
     <div class="tab-group">
       <div class="tab-nav reveal">

@@ -41,7 +41,7 @@ try{
   ] as [$l,$v,$c]): ?>
   <div class="sc">
     <div class="sc-bar" style="background:<?=$c?>"></div>
-    <div style="font-family:'Fraunces',serif;font-size:2rem;font-weight:300;color:var(--ink);line-height:1;letter-spacing:-.04em"><?=number_format((int)$v)?></div>
+    <div style="font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--ink);line-height:1;letter-spacing:-.04em"><?=number_format((int)$v)?></div>
     <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-top:.3rem"><?=$l?></div>
   </div>
   <?php endforeach; ?>
@@ -67,7 +67,7 @@ try{
   <?php else: foreach($upev as $i=>$ev): ?>
   <div style="padding:.72rem 1.1rem;display:flex;align-items:center;gap:.85rem;<?=$i?'border-top:1px solid var(--border)':''?>">
     <div style="width:38px;height:38px;background:var(--warm-grey);border-radius:var(--r);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
-      <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--ink);line-height:1"><?=date('j',strtotime($ev['event_date']))?></div>
+      <div style="font-family:var(--font-display);font-size:1rem;font-weight:300;color:var(--ink);line-height:1"><?=date('j',strtotime($ev['event_date']))?></div>
       <div style="font-size:.52rem;font-weight:600;text-transform:uppercase;color:var(--muted)"><?=date('M',strtotime($ev['event_date']))?></div>
     </div>
     <div style="flex:1;min-width:0">

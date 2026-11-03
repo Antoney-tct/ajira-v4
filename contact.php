@@ -1,15 +1,31 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__.'/config/bootstrap.php';
-$sent=false; $errors=[];
+$sent=!empty($_SESSION['contact_message_sent']); unset($_SESSION['contact_message_sent']); $errors=[];
+if($_SERVER['REQUEST_METHOD']==='POST'&&!isMember()) redirect('member_login.php');
+if(isMember()){
+  if(empty($_SESSION['contact_message_csrf'])) $_SESSION['contact_message_csrf']=bin2hex(random_bytes(32));
+  $contactCsrf=$_SESSION['contact_message_csrf'];
+  $memberStatement=db()->prepare('SELECT id,full_name,email FROM members WHERE id=? LIMIT 1');
+  $memberStatement->execute([(int)$_SESSION['member_id']]);
+  $contactMember=$memberStatement->fetch();
+  if(!$contactMember){unset($_SESSION['member_id']);redirect('member_login.php');}
+}else $contactMember=null;
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  $name=trim($_POST['name']??''); $email=strtolower(trim($_POST['email']??''));
-  $subject=trim($_POST['subject']??''); $message=trim($_POST['message']??'');
-  if(strlen($name)<2) $errors[]='Your name is required.';
-  if(!filter_var($email,FILTER_VALIDATE_EMAIL)) $errors[]='Enter a valid email address.';
-  if(strlen($message)<10) $errors[]='Please write a message (min 10 characters).';
+  $postedCsrf=$_POST['csrf']??null;
+  if(!is_string($postedCsrf)||!hash_equals($contactCsrf,$postedCsrf)) $errors[]='Your session expired. Refresh the page and try again.';
+  $name=$contactMember['full_name']; $email=strtolower($contactMember['email']);
+  $subjectInput=$_POST['subject']??''; $messageInput=$_POST['message']??'';
+  $subject=is_string($subjectInput)?trim($subjectInput):'';
+  $message=is_string($messageInput)?trim($messageInput):'';
+  if(strlen($subject)>200) $errors[]='The subject must be 200 characters or fewer.';
+  if(strlen($message)<10||strlen($message)>5000) $errors[]='Please write a message between 10 and 5,000 characters.';
   if(empty($errors)){
-    try{ db()->prepare('INSERT INTO contact_messages(name,email,subject,message) VALUES(?,?,?,?)')->execute([$name,$email,$subject,$message]); $sent=true; }
+    try{
+      db()->prepare('INSERT INTO contact_messages(member_id,name,email,subject,message) VALUES(?,?,?,?,?)')->execute([(int)$contactMember['id'],$name,$email,$subject,$message]);
+      $_SESSION['contact_message_sent']=true;
+      redirect('contact.php');
+    }
     catch(Throwable $e){ error_log($e->getMessage()); $errors[]='Failed to send. Try again.'; }
   }
 }
@@ -17,65 +33,101 @@ $pageTitle='Contact Us'; include '_head.php';
 ?>
 <div class="page-hero">
   <div class="wrap page-hero-inner">
-    <nav class="breadcrumb"><a href="index.php">Home</a> <i class="bi bi-chevron-right" style="font-size:.55rem"></i> Contact</nav>
-    <div class="pg-label"><i class="bi bi-chat-dots-fill"></i> Get in Touch</div>
-    <h1>Contact <em>Us</em></h1>
-    <p>WhatsApp is fastest. Email us for formal enquiries, partnerships, or media requests.</p>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="index.php"><i class="bi bi-house-door-fill" aria-hidden="true"></i>Home</a></li><li class="breadcrumb-separator" aria-hidden="true"><i class="bi bi-chevron-right"></i></li><li aria-current="page">Contact</li></ol></nav>
+    <div class="pg-label"><i class="bi bi-chat-dots-fill"></i> We’re listening</div>
+    <h1>Let’s start a <em>conversation</em></h1>
+    <p>Questions about joining, events, or working with the club? Reach out to the AJira team at either campus.</p>
   </div>
 </div>
-<section>
+<section class="contact-page">
   <div class="wrap">
-    <!-- Contact details as editorial list -->
-    <div style="border-top:1px solid var(--border);margin-bottom:2.5rem">
-      <?php foreach([['Location','Zetech University, Ruiru Campus, Kiambu County'],['Email','ajiraclub@zetech.ac.ke'],['WhatsApp','Join our group for instant updates and event notices'],['Hours','Monday – Friday, 8:00 AM – 6:00 PM']] as $i=>[$l,$v]): ?>
-      <div class="reveal" style="transition-delay:<?=$i*.06?>s;display:grid;grid-template-columns:100px 1fr;gap:1.5rem;padding:1.1rem 0;border-bottom:1px solid var(--border);align-items:center">
-        <div style="font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)"><?=$l?></div>
-        <div style="font-size:.9rem;color:var(--ink)"><?=$v?></div>
+    <div class="contact-layout">
+      <aside class="contact-sidebar">
+        <div class="contact-heading reveal">
+          <div class="label">Come say hello</div>
+          <h2 class="t-lg">Two campuses.<br><em>One community.</em></h2>
+          <p>We’d love to hear from you. Pick your campus or send us a message and we’ll help you find the right person.</p>
+        </div>
+        <div class="contact-campus-grid">
+          <article class="contact-campus-card reveal">
+            <span class="contact-icon"><i class="bi bi-geo-alt-fill"></i></span>
+            <div class="label">Ruiru campus</div>
+            <h3>Ruiru (TRC)</h3>
+            <p>Zetech University<br>Ruiru, Kiambu County</p>
+          </article>
+          <article class="contact-campus-card reveal d1">
+            <span class="contact-icon contact-icon-mangu"><i class="bi bi-geo-alt-fill"></i></span>
+            <div class="label">Mangu campus</div>
+            <h3>Mangu Campus</h3>
+            <p>Zetech University<br>Mangu</p>
+          </article>
+        </div>
+        <a class="contact-email-card reveal" href="mailto:ajiraclub@zetech.ac.ke">
+          <span><i class="bi bi-envelope-fill"></i></span>
+          <div><small>Email the club</small><strong>ajiraclub@zetech.ac.ke</strong></div>
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+        <div class="contact-hours reveal"><i class="bi bi-clock"></i><span><strong>Club hours</strong><br>Monday – Friday · 8:00 AM – 6:00 PM</span></div>
       </div>
-      <?php endforeach; ?>
-    </div>
 
-    <!-- Form -->
-    <?php if($sent): ?>
-    <div style="background:var(--warm-grey);border:1px solid var(--border);border-radius:var(--r-xl);padding:2.5rem;text-align:center" class="reveal">
-      <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:300;color:var(--ink);margin-bottom:.4rem">Message sent.</div>
-      <p style="color:var(--muted);font-size:.88rem">We'll reply within 24 hours.</p>
-      <a href="contact.php" class="btn btn-outline" style="margin-top:1.25rem;display:inline-flex">Send another →</a>
-    </div>
-    <?php else: ?>
-    <div class="card reveal" style="padding:1.75rem">
-      <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--ink);margin-bottom:1.5rem;font-weight:300">Send a message</div>
-      <?php if(!empty($errors)): ?>
-      <div style="background:rgba(192,57,43,.06);border:1.5px solid rgba(192,57,43,.15);border-radius:var(--r);padding:.8rem 1rem;margin-bottom:1.25rem">
-        <?php foreach($errors as $err): ?><div style="color:var(--red);font-size:.84rem;font-weight:600"><?=e($err)?></div><?php endforeach; ?>
+      <div class="contact-main">
+        <?php if($sent): ?>
+        <div class="contact-success reveal" role="status">
+          <span><i class="bi bi-check2"></i></span>
+          <div class="label">Message received</div>
+          <h2>Thanks for reaching out.</h2>
+          <p>Your message is with our team. We’ll get back to you as soon as we can.</p>
+          <a href="member_messages.php" class="btn btn-forest">View message history <i class="bi bi-arrow-right"></i></a>
+          <a href="contact.php" class="btn btn-outline">Send another message <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <?php else: ?>
+        <?php if(!$contactMember): ?>
+        <div class="contact-form-card reveal">
+          <div class="contact-form-heading">
+            <span><i class="bi bi-person-lock"></i></span>
+            <div><div class="label">Member conversations</div><h2>Sign in to message us</h2><p>Sign in to start a conversation and follow the full reply history from your member portal.</p></div>
+          </div>
+          <a href="member_login.php" class="btn btn-forest contact-submit"><i class="bi bi-box-arrow-in-right"></i> Member sign in <i class="bi bi-arrow-right"></i></a>
+          <p style="font-size:.82rem;color:var(--muted);margin-top:1rem">Not a member yet? <a href="join.php" style="color:var(--forest);font-weight:700">Create your member profile</a>.</p>
+        </div>
+        <?php else: ?>
+        <div class="contact-form-card reveal">
+          <div class="contact-form-heading">
+            <span><i class="bi bi-send-fill"></i></span>
+            <div><div class="label">Drop us a note</div><h2>Send a message</h2><p>Fields marked * are required.</p></div>
+          </div>
+          <?php if(!empty($errors)): ?>
+          <div class="contact-errors" role="alert">
+            <?php foreach($errors as $err): ?><div><i class="bi bi-exclamation-circle"></i> <?=e($err)?></div><?php endforeach; ?>
+          </div>
+          <?php endif; ?>
+          <form method="POST" class="contact-form">
+            <input type="hidden" name="csrf" value="<?=e($contactCsrf)?>">
+            <div style="font-size:.82rem;color:var(--muted)">Sending as <strong style="color:var(--ink)"><?=e($contactMember['full_name'])?></strong> · <?=e($contactMember['email'])?></div>
+            <div>
+              <label class="f-label" for="contact-subject">What’s this about?</label>
+              <select id="contact-subject" name="subject" class="f-input">
+                <option value="">Select a topic…</option>
+                <?php foreach(['Membership','Partnership / Sponsorship','Event Collaboration','Media / Press','General Feedback','Other'] as $o): ?>
+                <option value="<?=$o?>" <?=($_POST['subject']??'')===$o?'selected':''?>><?=$o?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div><label class="f-label" for="contact-message">Your message *</label><textarea id="contact-message" name="message" class="f-input" rows="5" maxlength="5000" placeholder="Tell us what’s on your mind…" required><?=e($_POST['message']??'')?></textarea></div>
+            <button type="submit" class="btn btn-forest contact-submit"><i class="bi bi-send-fill"></i> Send message <i class="bi bi-arrow-right"></i></button>
+          </form>
+        </div>
+        <?php endif; ?>
+        <?php endif; ?>
       </div>
-      <?php endif; ?>
-      <form method="POST" style="display:flex;flex-direction:column;gap:.85rem">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div><label class="f-label">Full Name *</label><input type="text" name="name" class="f-input" placeholder="Jane Wanjiku" value="<?=e($_POST['name']??'')?>" required></div>
-          <div><label class="f-label">Email *</label><input type="email" name="email" class="f-input" placeholder="jane@email.com" value="<?=e($_POST['email']??'')?>" required></div>
-        </div>
-        <div>
-          <label class="f-label">Subject</label>
-          <select name="subject" class="f-input">
-            <option value="">Select a topic…</option>
-            <?php foreach(['Membership','Partnership / Sponsorship','Event Collaboration','Media / Press','General Feedback','Other'] as $o): ?>
-            <option value="<?=$o?>" <?=($_POST['subject']??'')===$o?'selected':''?>><?=$o?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div><label class="f-label">Message *</label><textarea name="message" class="f-input" rows="4" placeholder="Tell us what's on your mind…" required><?=e($_POST['message']??'')?></textarea></div>
-        <button type="submit" class="btn btn-forest btn-full" style="padding:.82rem"><i class="bi bi-send-fill"></i> Send Message</button>
-      </form>
     </div>
-    <?php endif; ?>
 
     <!-- Socials -->
-    <div class="reveal" style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.75rem">
-      <div class="label" style="margin-bottom:1rem">Follow us</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem">
-        <?php foreach([['bi-whatsapp','#25D366','WhatsApp'],['bi-instagram','#E1306C','Instagram'],['bi-twitter-x','var(--ink)','Twitter/X'],['bi-facebook','#1877F2','Facebook'],['bi-tiktok','var(--ink)','TikTok'],['bi-youtube','#FF0000','YouTube']] as [$i,$c,$n]): ?>
-        <a href="#" class="card" style="padding:.85rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;color:var(--ink);text-decoration:none">
+    <div class="contact-socials reveal">
+      <div><div class="label">Keep up with us</div><p>Follow club updates, student work, and upcoming events.</p></div>
+      <div class="contact-social-grid">
+        <?php foreach([['bi-instagram','#E1306C','Instagram','https://www.instagram.com/ajira_digital.club.zetech/'],['bi-twitter-x','var(--ink)','X','https://x.com/ZetechAjiraclub'],['bi-facebook','#1877F2','Facebook','https://www.facebook.com/profile.php?id=61595630222788'],['bi-tiktok','var(--ink)','TikTok','https://www.tiktok.com/@zetechajiraclub?lang=en']] as [$i,$c,$n,$url]): ?>
+        <a href="<?=$url?>" target="_blank" rel="noopener noreferrer" class="card" style="padding:.85rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;color:var(--ink);text-decoration:none">
           <i class="bi <?=$i?>" style="font-size:1.25rem;color:<?=$c?>"></i><?=$n?>
         </a>
         <?php endforeach; ?>
